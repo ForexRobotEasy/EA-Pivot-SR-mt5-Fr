@@ -1,0 +1,61 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                        EA Pivot SR MT5 FR        |
+//|                                        Developer's Site: forexroboteasy.com      |
+//|                                        Development: Forex Robot Easy Team |
+//+------------------------------------------------------------------+
+
+#property copyright 'Forex Robot Easy Team'
+#property link      'forexroboteasy.com'
+
+// Input parameters
+input int OrderPlacementTime = 5; // Time for order placement in GMT
+
+// Pivot Point System strategy
+void PivotPointSystem()
+{
+   // Calculate pivot levels
+   double PivotLevel = (High[1] + Low[1] + Close[1]) / 3;
+   double Resistance1 = (2 * PivotLevel) - Low[1];
+   double Resistance2 = PivotLevel + (High[1] - Low[1]);
+   double Support1 = (2 * PivotLevel) - High[1];
+   double Support2 = PivotLevel - (High[1] - Low[1]);
+   
+   // Place pending orders at calculated levels
+   if (Hour() == OrderPlacementTime)
+   {
+      // Buy order
+      double BuyStopLevel = Resistance1;
+      double BuyStopPrice = BuyStopLevel + Point;
+      double BuyStopSL = Support1;
+      double BuyStopTP = BuyStopLevel + (BuyStopLevel - BuyStopSL);
+      OrderSend(Symbol(), OP_BUYSTOP, 0.01, BuyStopPrice, 0, BuyStopSL, BuyStopTP);
+      
+      // Sell order
+      double SellStopLevel = Support1;
+      double SellStopPrice = SellStopLevel - Point;
+      double SellStopSL = Resistance1;
+      double SellStopTP = SellStopLevel - (SellStopSL - SellStopLevel);
+      OrderSend(Symbol(), OP_SELLSTOP, 0.01, SellStopPrice, 0, SellStopSL, SellStopTP);
+   }
+}
+
+// Expert Advisor initialization function
+int OnInit()
+{
+   // Enable needed technical indicators and allocate buffers
+   IndicatorSetInteger(INDICATOR_PIVOT, INDICATOR_DATA, MODE_MAIN);
+   IndicatorSetInteger(INDICATOR_PIVOT, INDICATOR_DIGITS, MarketInfo(Symbol(), MODE_DIGITS));
+   ArrayInitialize(Pivot, EMPTY_VALUE);
+   
+   return(INIT_SUCCEEDED);
+}
+
+// Expert Advisor start function
+void OnTick()
+{
+   // Perform Pivot Point System strategy
+   PivotPointSystem();
+}
+
+//+------------------------------------------------------------------+
